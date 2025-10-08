@@ -281,7 +281,7 @@ def plot_samples_grid(alpha_vals, beta_vals, loss_grids, metas, save_path,
 
 def main():
     # Configuration
-    SEED = 42
+    SEED = np.random.randint(0, 2**31 - 1)  # Generate random seed each time
     NUM_SAMPLES = 10
     SAMPLE_SET = 'train'  # 'train' or 'test'
     RESOLUTION = 51
