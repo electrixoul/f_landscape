@@ -1,6 +1,6 @@
 # f_landscape
 
-A minimal MNIST linear classification network implementation using PyTorch.
+A minimal MNIST linear classification network implementation using PyTorch with loss landscape visualization.
 
 ## Project Description
 
@@ -9,6 +9,7 @@ This project implements the simplest possible neural network for MNIST digit cla
 - Cross-entropy loss function
 - Standard backpropagation training
 - Optimized for Apple Silicon (M4 Pro) with MPS support
+- Loss landscape visualization using filter-wise normalization (following Li et al., NeurIPS 2018)
 
 ## Network Architecture
 
@@ -27,6 +28,8 @@ Total parameters: 7,850 (784 × 10 weights + 10 biases)
 - Python 3.8+
 - PyTorch 2.0+
 - torchvision 0.15+
+- NumPy 1.20+
+- Matplotlib 3.5+
 
 ## Setup
 
@@ -58,6 +61,34 @@ The script will:
 - Evaluate on test set after each epoch
 - Save the trained model to `mnist_linear_model.pth`
 
+### Loss Landscape Visualization
+
+After training, visualize the loss landscape:
+```bash
+python visualize_loss_landscape.py
+```
+
+This script implements the visualization method from "Visualizing the Loss Landscape of Neural Nets" (Li et al., NeurIPS 2018):
+- Creates two random direction vectors with **filter-wise normalization**
+- Ignores bias parameters (sets perturbation to zero)
+- Computes loss over a 51×51 grid in the 2D plane defined by these directions
+- Generates multiple visualization outputs
+
+The script will generate:
+- `landscape_train_2d_contour.png` - 2D contour plot of training loss
+- `landscape_test_2d_contour.png` - 2D contour plot of test loss
+- `landscape_train_3d_surface.png` - 3D surface plot
+- `landscape_train_1d_slices.png` - 1D slices along α and β axes
+- `loss_grid_train.npz` - Numerical data for training set
+- `loss_grid_test.npz` - Numerical data for test set
+- `experiment_log.txt` - Experimental parameters and results
+
+#### Key Features of the Visualization:
+- **Filter-wise normalization**: Each "filter" (output neuron weight vector) in the random directions is normalized to have the same norm as the corresponding filter in the trained model
+- **Bias ignored**: Following the paper's recommendation, bias parameters are not perturbed
+- **Efficient computation**: Logits are precomputed once, then linearly combined for each grid point
+- **Reproducible**: Fixed random seed (42) for consistent results
+
 ### Loading the Trained Model
 
 ```python
@@ -76,22 +107,59 @@ model.eval()
 
 ## Hyperparameters
 
+### Training
 - Batch size: 64
 - Learning rate: 0.01
 - Epochs: 10
 - Optimizer: SGD (vanilla backpropagation)
 
+### Loss Landscape Visualization
+- Grid resolution: 51×51 (default from paper)
+- Alpha range: [-1, 1]
+- Beta range: [-1, 1]
+- Random seed: 42
+- Normalization: Filter-wise
+- Bias handling: Ignored (set to zero)
+
 ## Expected Performance
 
 This minimal linear classifier typically achieves around 92-93% accuracy on the MNIST test set, demonstrating that even without hidden layers or non-linearities, a simple linear model can perform reasonably well on this dataset.
+
+The loss landscape visualization reveals:
+- A relatively smooth and convex loss surface
+- The trained model (θ*) sits at the center (0, 0) in a local minimum
+- Loss increases gradually in all directions from the minimum
 
 ## File Structure
 
 ```
 f_landscape/
-├── train_mnist.py          # Main training script
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── .gitignore            # Git ignore rules
-├── data/                 # MNIST dataset (auto-downloaded, gitignored)
-└── mnist_linear_model.pth # Trained model (gitignored)
+├── train_mnist.py                    # Main training script
+├── visualize_loss_landscape.py       # Loss landscape visualization
+├── requirements.txt                  # Python dependencies
+├── README.md                         # This file
+├── .gitignore                        # Git ignore rules
+├── mnist_linear_loss_landscape_plan.md  # Detailed visualization plan
+├── Visualizing the Loss Landscape of Neural Nets.pdf  # Reference paper
+├── data/                             # MNIST dataset (gitignored)
+├── mnist_linear_model.pth            # Trained model (gitignored)
+└── loss_landscape_results/           # Visualization outputs (gitignored)
+    ├── landscape_train_2d_contour.png
+    ├── landscape_test_2d_contour.png
+    ├── landscape_train_3d_surface.png
+    ├── landscape_train_1d_slices.png
+    ├── loss_grid_train.npz
+    ├── loss_grid_test.npz
+    └── experiment_log.txt
+```
+
+## References
+
+The loss landscape visualization methodology is based on:
+
+**Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T. (2018).** *Visualizing the Loss Landscape of Neural Nets.* In Advances in Neural Information Processing Systems (NeurIPS 2018).
+
+Key concepts implemented:
+- Filter-wise normalization for meaningful scale-invariant comparisons
+- 2D loss surface slicing using random directions
+- Efficient computation via logit precomputation for linear models
