@@ -63,7 +63,9 @@ The script will:
 
 ### Loss Landscape Visualization
 
-After training, visualize the loss landscape:
+#### 1. Overall Loss Landscape
+
+Visualize the overall loss landscape (averaged over entire dataset):
 ```bash
 python visualize_loss_landscape.py
 ```
@@ -83,11 +85,33 @@ The script will generate:
 - `loss_grid_test.npz` - Numerical data for test set
 - `experiment_log.txt` - Experimental parameters and results
 
+#### 2. Single-Sample Loss Landscapes
+
+Visualize loss landscapes for individual samples:
+```bash
+python visualize_single_sample_landscapes.py
+```
+
+This script extends the methodology to analyze individual samples:
+- Randomly selects 10 samples from the dataset
+- Computes the loss landscape for each sample independently
+- Uses the same filter-wise normalized directions for all samples
+- Creates a tiled visualization for easy comparison
+
+The script will generate:
+- `samples_landscape_grid.png` - Tiled 2D contour plots (2×5 layout)
+- `samples_landscape_grid.pdf` - PDF version of tiled plot
+- `selected_samples.json` - Metadata for selected samples
+- `sample_<idx>_loss_grid.npz` - Individual sample loss grids (10 files)
+- `single_sample_experiment_log.txt` - Experiment log
+
 #### Key Features of the Visualization:
 - **Filter-wise normalization**: Each "filter" (output neuron weight vector) in the random directions is normalized to have the same norm as the corresponding filter in the trained model
 - **Bias ignored**: Following the paper's recommendation, bias parameters are not perturbed
 - **Efficient computation**: Logits are precomputed once, then linearly combined for each grid point
 - **Reproducible**: Fixed random seed (42) for consistent results
+- **Sample-level analysis**: Reveals how individual samples contribute to the overall loss landscape
+- **Shared colorbar**: Enables direct comparison across samples
 
 ### Loading the Trained Model
 
