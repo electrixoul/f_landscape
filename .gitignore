@@ -376,6 +376,9 @@ MANIFEST
 # Dataset
 data/
 
+# Loss landscape visualization results
+loss_landscape_results/
+
 # Environment
 .env
 .venv
