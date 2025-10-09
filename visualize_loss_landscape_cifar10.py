@@ -17,20 +17,20 @@ def set_seed(seed=42):
         torch.cuda.manual_seed(seed)
 
 def load_data(batch_size=128):
-    """Load CIFAR-10 dataset with same normalization as training"""
+    """Load CIFAR-100 dataset with same normalization as training"""
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
+        transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
     ])
     
-    train_dataset = datasets.CIFAR10(
+    train_dataset = datasets.CIFAR100(
         root='./data',
         train=True,
         download=False,
         transform=transform
     )
     
-    test_dataset = datasets.CIFAR10(
+    test_dataset = datasets.CIFAR100(
         root='./data',
         train=False,
         download=False,
@@ -297,7 +297,7 @@ def main():
     DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     
     print("=" * 60)
-    print("CIFAR-10 CNN - Loss Landscape Visualization")
+    print("CIFAR-100 CNN - Loss Landscape Visualization")
     print("=" * 60)
     print(f"Device: {DEVICE}")
     print(f"Random seed: {SEED}")
@@ -319,7 +319,7 @@ def main():
     print(f"   Model loaded. Test accuracy: {checkpoint['test_accuracy']:.2f}%")
     
     # Load data
-    print("\n2. Loading CIFAR-10 dataset...")
+    print("\n2. Loading CIFAR-100 dataset...")
     train_loader, test_loader = load_data(batch_size=512)
     print(f"   Training samples: {len(train_loader.dataset)}")
     print(f"   Test samples: {len(test_loader.dataset)}")

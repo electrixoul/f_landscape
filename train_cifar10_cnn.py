@@ -5,22 +5,22 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import os
 
-# Define a minimal CNN classifier for CIFAR-10
+# Define a CNN classifier for CIFAR-100 (5x larger than original TinyCNN)
 class TinyCNN(nn.Module):
     def __init__(self):
         super(TinyCNN, self).__init__()
-        # Convolutional layers
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)  # 3->16: 448 params
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)  # 16->32: 4,640 params
-        self.conv3 = nn.Conv2d(32, 32, kernel_size=3, padding=1)  # 32->32: 9,248 params
+        # Convolutional layers (5x larger)
+        self.conv1 = nn.Conv2d(3, 22, kernel_size=3, padding=1)  # 3->22: 616 params
+        self.conv2 = nn.Conv2d(22, 44, kernel_size=3, padding=1)  # 22->44: 8,756 params
+        self.conv3 = nn.Conv2d(44, 44, kernel_size=3, padding=1)  # 44->44: 17,468 params
         self.pool = nn.MaxPool2d(2, 2)
         self.relu = nn.ReLU()
         
         # After 3 pooling layers: 32x32 -> 16x16 -> 8x8 -> 4x4
-        # Output: 32 channels x 4x4 = 512
-        self.fc = nn.Linear(32 * 4 * 4, 10)  # 512->10: 5,130 params
+        # Output: 44 channels x 4x4 = 704
+        self.fc = nn.Linear(44 * 4 * 4, 100)  # 704->100: 70,500 params
         
-        # Total parameters: 448 + 4,640 + 9,248 + 5,130 = 19,466
+        # Total parameters: 616 + 8,756 + 17,468 + 70,500 = 97,340 (~5x)
     
     def forward(self, x):
         # Conv block 1
@@ -59,27 +59,27 @@ def train():
     data_dir = './data'
     os.makedirs(data_dir, exist_ok=True)
     
-    # Data transforms for CIFAR-10
+    # Data transforms for CIFAR-100
     transform_train = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
+        transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
     ])
     
     transform_test = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
+        transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
     ])
     
-    # Load CIFAR-10 dataset
-    print("Loading CIFAR-10 dataset...")
-    train_dataset = datasets.CIFAR10(
+    # Load CIFAR-100 dataset
+    print("Loading CIFAR-100 dataset...")
+    train_dataset = datasets.CIFAR100(
         root=data_dir,
         train=True,
         download=True,
         transform=transform_train
     )
     
-    test_dataset = datasets.CIFAR10(
+    test_dataset = datasets.CIFAR100(
         root=data_dir,
         train=False,
         download=True,

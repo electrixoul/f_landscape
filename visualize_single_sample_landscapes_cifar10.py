@@ -16,20 +16,20 @@ def set_seed(seed=42):
         torch.cuda.manual_seed(seed)
 
 def load_data(batch_size=128):
-    """Load CIFAR-10 dataset with same normalization as training"""
+    """Load CIFAR-100 dataset with same normalization as training"""
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
+        transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
     ])
     
-    train_dataset = datasets.CIFAR10(
+    train_dataset = datasets.CIFAR100(
         root='./data',
         train=True,
         download=False,
         transform=transform
     )
     
-    test_dataset = datasets.CIFAR10(
+    test_dataset = datasets.CIFAR100(
         root='./data',
         train=False,
         download=False,
@@ -249,11 +249,11 @@ def plot_samples_grid(alpha_vals, beta_vals, loss_grids, metas, save_path,
             axins = inset_axes(ax, width="20%", height="20%", loc='upper right',
                              bbox_to_anchor=(0.05, 0.05, 1, 1),
                              bbox_transform=ax.transAxes, borderpad=0)
-            # CIFAR-10 images are 3-channel, transpose for display
+            # CIFAR-100 images are 3-channel, transpose for display
             img = np.transpose(meta['image'], (1, 2, 0))
-            # Denormalize for display
-            mean = np.array([0.4914, 0.4822, 0.4465])
-            std = np.array([0.2470, 0.2435, 0.2616])
+            # Denormalize for display (CIFAR-100 normalization)
+            mean = np.array([0.5071, 0.4867, 0.4408])
+            std = np.array([0.2675, 0.2565, 0.2761])
             img = img * std + mean
             img = np.clip(img, 0, 1)
             axins.imshow(img)
@@ -265,7 +265,7 @@ def plot_samples_grid(alpha_vals, beta_vals, loss_grids, metas, save_path,
         cbar = fig.colorbar(contourf, cax=cbar_ax)
         cbar.set_label('Loss value', fontsize=10)
     
-    plt.suptitle('CIFAR-10 Single-Sample Loss Landscapes (Filter-Normalized Random Directions)',
+    plt.suptitle('CIFAR-100 Single-Sample Loss Landscapes (Filter-Normalized Random Directions)',
                  fontsize=14, fontweight='bold', y=0.995)
     
     plt.tight_layout(rect=[0, 0, 0.92 if share_colorbar else 1, 0.99])
@@ -288,7 +288,7 @@ def main():
     DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     
     print("=" * 60)
-    print("CIFAR-10 Single-Sample Loss Landscape Visualization")
+    print("CIFAR-100 Single-Sample Loss Landscape Visualization")
     print("=" * 60)
     print(f"Device: {DEVICE}")
     print(f"Random seed: {SEED}")
@@ -311,7 +311,7 @@ def main():
     model.eval()
     print(f"   Model loaded. Test accuracy: {checkpoint['test_accuracy']:.2f}%")
     
-    print("\n2. Loading CIFAR-10 dataset...")
+    print("\n2. Loading CIFAR-100 dataset...")
     train_loader, test_loader, train_dataset, test_dataset = load_data(batch_size=512)
     dataset = train_dataset if SAMPLE_SET == 'train' else test_dataset
     data_loader = train_loader if SAMPLE_SET == 'train' else test_loader
