@@ -354,35 +354,35 @@ def main():
     
     # Save numerical data
     print("\n6. Saving numerical data...")
-    np.savez('loss_landscape_results/loss_grid_train_cifar10.npz',
+    np.savez('loss_landscape_results/loss_grid_train_cifar100.npz',
              alpha=alpha_vals,
              beta=beta_vals,
              loss=loss_grid_train,
              center_loss=center_loss_train,
              resolution=RESOLUTION,
              seed=SEED)
-    print("   Saved: loss_landscape_results/loss_grid_train_cifar10.npz")
+    print("   Saved: loss_landscape_results/loss_grid_train_cifar100.npz")
     
     # Plot 2D contour for training set
     print("\n7. Creating visualizations...")
     plot_2d_contour(
         alpha_vals, beta_vals, loss_grid_train,
-        'CIFAR-10 TinyCNN - Training Loss Landscape\n(Filter-Normalized Random Directions)',
-        'loss_landscape_results/landscape_train_2d_contour_cifar10.png'
+        'CIFAR-100 TinyCNN - Training Loss Landscape\n(Filter-Normalized Random Directions)',
+        'loss_landscape_results/landscape_train_2d_contour_cifar100.png'
     )
     
     # Plot 3D surface
     plot_3d_surface(
         alpha_vals, beta_vals, loss_grid_train,
-        'CIFAR-10 TinyCNN - Training Loss Landscape (3D)',
-        'loss_landscape_results/landscape_train_3d_surface_cifar10.png'
+        'CIFAR-100 TinyCNN - Training Loss Landscape (3D)',
+        'loss_landscape_results/landscape_train_3d_surface_cifar100.png'
     )
     
     # Plot 1D slices
     plot_1d_slice(
         alpha_vals, beta_vals, loss_grid_train,
-        'CIFAR-10 TinyCNN - 1D Loss Slices',
-        'loss_landscape_results/landscape_train_1d_slices_cifar10.png'
+        'CIFAR-100 TinyCNN - 1D Loss Slices',
+        'loss_landscape_results/landscape_train_1d_slices_cifar100.png'
     )
     
     # Optional: Compute for test set
@@ -401,7 +401,7 @@ def main():
         ALPHA_RANGE, BETA_RANGE, RESOLUTION
     )
     
-    np.savez('loss_landscape_results/loss_grid_test_cifar10.npz',
+    np.savez('loss_landscape_results/loss_grid_test_cifar100.npz',
              alpha=alpha_vals_test,
              beta=beta_vals_test,
              loss=loss_grid_test,
@@ -411,8 +411,8 @@ def main():
     
     plot_2d_contour(
         alpha_vals_test, beta_vals_test, loss_grid_test,
-        'CIFAR-10 TinyCNN - Test Loss Landscape\n(Filter-Normalized Random Directions)',
-        'loss_landscape_results/landscape_test_2d_contour_cifar10.png'
+        'CIFAR-100 TinyCNN - Test Loss Landscape\n(Filter-Normalized Random Directions)',
+        'loss_landscape_results/landscape_test_2d_contour_cifar100.png'
     )
     
     print("\n" + "=" * 60)
@@ -421,8 +421,8 @@ def main():
     print("=" * 60)
     
     # Generate experiment log
-    with open('loss_landscape_results/experiment_log_cifar10.txt', 'w') as f:
-        f.write("CIFAR-10 TinyCNN - Loss Landscape Analysis\n")
+    with open('loss_landscape_results/experiment_log_cifar100.txt', 'w') as f:
+        f.write("CIFAR-100 TinyCNN - Loss Landscape Analysis\n")
         f.write("=" * 60 + "\n\n")
         f.write(f"Random seed: {SEED}\n")
         f.write(f"Grid resolution: {RESOLUTION}x{RESOLUTION}\n")
@@ -435,14 +435,14 @@ def main():
         f.write(f"Test set center loss L(0,0): {center_loss_test:.6f}\n")
         f.write(f"Model test accuracy: {checkpoint['test_accuracy']:.2f}%\n\n")
         f.write("Files generated:\n")
-        f.write("- loss_grid_train_cifar10.npz (numerical data)\n")
-        f.write("- loss_grid_test_cifar10.npz (numerical data)\n")
-        f.write("- landscape_train_2d_contour_cifar10.png (2D contour plot)\n")
-        f.write("- landscape_test_2d_contour_cifar10.png (2D contour plot)\n")
-        f.write("- landscape_train_3d_surface_cifar10.png (3D surface plot)\n")
-        f.write("- landscape_train_1d_slices_cifar10.png (1D slices)\n")
+        f.write("- loss_grid_train_cifar100.npz (numerical data)\n")
+        f.write("- loss_grid_test_cifar100.npz (numerical data)\n")
+        f.write("- landscape_train_2d_contour_cifar100.png (2D contour plot)\n")
+        f.write("- landscape_test_2d_contour_cifar100.png (2D contour plot)\n")
+        f.write("- landscape_train_3d_surface_cifar100.png (3D surface plot)\n")
+        f.write("- landscape_train_1d_slices_cifar100.png (1D slices)\n")
     
-    print("Experiment log saved: loss_landscape_results/experiment_log_cifar10.txt")
+    print("Experiment log saved: loss_landscape_results/experiment_log_cifar100.txt")
 
 if __name__ == '__main__':
     main()

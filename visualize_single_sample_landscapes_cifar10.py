@@ -238,7 +238,9 @@ def plot_samples_grid(alpha_vals, beta_vals, loss_grids, metas, save_path,
         center_loss = meta['center_loss']
         
         title = f"Sample #{idx} | y={y_true}, ŷ={y_pred} | p={prob:.3f} | L(0,0)={center_loss:.3f}"
-        ax.set_title(title, fontsize=9, fontweight='bold')
+        # Use red color for misclassified samples
+        title_color = 'red' if y_true != y_pred else 'black'
+        ax.set_title(title, fontsize=9, fontweight='bold', color=title_color)
         
         ax.set_xlabel('α direction', fontsize=8)
         ax.set_ylabel('β direction', fontsize=8)
@@ -278,10 +280,10 @@ def main():
     # Configuration
     SEED = np.random.randint(0, 2**31 - 1)
     NUM_SAMPLES = 10
-    SAMPLE_SET = 'train'
+    SAMPLE_SET = 'test'  # Changed to test set
     RESOLUTION = 51
-    ALPHA_RANGE = (-1, 1)
-    BETA_RANGE = (-1, 1)
+    ALPHA_RANGE = (-10, 10)  # Expanded 10x from (-1, 1)
+    BETA_RANGE = (-10, 10)   # Expanded 10x from (-1, 1)
     LAYOUT = (2, 5)
     COLOR_SCALE = 'global'
     USE_GRAM_SCHMIDT = True
@@ -392,7 +394,7 @@ def main():
             'center_loss': float(meta['center_loss'])
         })
     
-    with open('loss_landscape_results/selected_samples_cifar10.json', 'w') as f:
+    with open('loss_landscape_results/selected_samples_cifar100.json', 'w') as f:
         json.dump({
             'seed': SEED,
             'sample_set': SAMPLE_SET,
@@ -400,12 +402,12 @@ def main():
             'indices': selected_indices,
             'samples': metadata_to_save
         }, f, indent=2)
-    print("   Saved: loss_landscape_results/selected_samples_cifar10.json")
+    print("   Saved: loss_landscape_results/selected_samples_cifar100.json")
     
     print("\n8. Creating visualization...")
     plot_samples_grid(
         alpha_vals, beta_vals, loss_grids, metas,
-        'loss_landscape_results/samples_landscape_grid_cifar10.png',
+        'loss_landscape_results/samples_landscape_grid_cifar100.png',
         layout=LAYOUT,
         share_colorbar=True,
         color_scale=COLOR_SCALE
@@ -413,7 +415,7 @@ def main():
     
     plot_samples_grid(
         alpha_vals, beta_vals, loss_grids, metas,
-        'loss_landscape_results/samples_landscape_grid_cifar10.pdf',
+        'loss_landscape_results/samples_landscape_grid_cifar100.pdf',
         layout=LAYOUT,
         share_colorbar=True,
         color_scale=COLOR_SCALE
@@ -421,7 +423,7 @@ def main():
     
     print("\n9. Saving individual sample data...")
     for i, (idx, loss_grid) in enumerate(zip(selected_indices, loss_grids)):
-        np.savez(f'loss_landscape_results/sample_{idx}_loss_grid_cifar10.npz',
+        np.savez(f'loss_landscape_results/sample_{idx}_loss_grid_cifar100.npz',
                  alpha=alpha_vals,
                  beta=beta_vals,
                  loss=loss_grid,
@@ -435,8 +437,8 @@ def main():
     print("Results saved in: loss_landscape_results/")
     print("=" * 60)
     
-    with open('loss_landscape_results/single_sample_experiment_log_cifar10.txt', 'w') as f:
-        f.write("CIFAR-10 Single-Sample Loss Landscape Analysis\n")
+    with open('loss_landscape_results/single_sample_experiment_log_cifar100.txt', 'w') as f:
+        f.write("CIFAR-100 Single-Sample Loss Landscape Analysis\n")
         f.write("=" * 60 + "\n\n")
         f.write(f"Random seed: {SEED}\n")
         f.write(f"Number of samples: {NUM_SAMPLES}\n")
@@ -456,12 +458,12 @@ def main():
             f.write(f"  Sample #{meta['idx']}: y={meta['y_true']}, ŷ={meta['y_pred']}, "
                    f"p={meta['prob']:.3f}, L(0,0)={meta['center_loss']:.4f}\n")
         f.write("\nFiles generated:\n")
-        f.write("- selected_samples_cifar10.json (sample metadata)\n")
-        f.write("- samples_landscape_grid_cifar10.png (tiled visualization)\n")
-        f.write("- samples_landscape_grid_cifar10.pdf (tiled visualization, PDF)\n")
-        f.write(f"- sample_<idx>_loss_grid_cifar10.npz (individual grids, {NUM_SAMPLES} files)\n")
+        f.write("- selected_samples_cifar100.json (sample metadata)\n")
+        f.write("- samples_landscape_grid_cifar100.png (tiled visualization)\n")
+        f.write("- samples_landscape_grid_cifar100.pdf (tiled visualization, PDF)\n")
+        f.write(f"- sample_<idx>_loss_grid_cifar100.npz (individual grids, {NUM_SAMPLES} files)\n")
     
-    print("Experiment log saved: loss_landscape_results/single_sample_experiment_log_cifar10.txt")
+    print("Experiment log saved: loss_landscape_results/single_sample_experiment_log_cifar100.txt")
 
 if __name__ == '__main__':
     main()
