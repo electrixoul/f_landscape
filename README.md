@@ -147,6 +147,7 @@ model.eval()
 
 ## Expected Performance
 
+### MNIST Linear Classifier
 This minimal linear classifier typically achieves around 92-93% accuracy on the MNIST test set, demonstrating that even without hidden layers or non-linearities, a simple linear model can perform reasonably well on this dataset.
 
 The loss landscape visualization reveals:
@@ -154,27 +155,70 @@ The loss landscape visualization reveals:
 - The trained model (θ*) sits at the center (0, 0) in a local minimum
 - Loss increases gradually in all directions from the minimum
 
+### CIFAR-10 TinyCNN
+The minimal CNN achieves around 73-74% test accuracy on CIFAR-10 with only 19,466 parameters (2.5x the MNIST linear model).
+
+The loss landscape visualization reveals:
+- More complex non-convex structure compared to MNIST linear classifier
+- Presence of local minima and saddle points
+- Steeper loss increase in certain directions
+- Filter-wise normalization enables meaningful comparison across different architectures
+
+## CIFAR-10 CNN Experiments
+
+### Training CIFAR-10 Model
+
+```bash
+python train_cifar10_cnn.py
+```
+
+Trains a minimal CNN (19,466 parameters) on CIFAR-10:
+- TinyCNN architecture: 3 Conv layers + 1 FC layer
+- 50 epochs with SGD (momentum 0.9)
+- Learning rate: 0.01 with MultiStepLR scheduler
+- Saves best model to `cifar10_cnn_model.pth`
+
+### CIFAR-10 Loss Landscape Visualization
+
+**Overall landscape:**
+```bash
+python visualize_loss_landscape_cifar10.py
+```
+
+**Single-sample landscapes:**
+```bash
+python visualize_single_sample_landscapes_cifar10.py
+```
+
+These scripts work identically to the MNIST versions but are adapted for:
+- CNN architecture with convolutional layers
+- CIFAR-10 dataset (32×32 RGB images)
+- Filter-wise normalization for 4D convolutional filters
+
 ## File Structure
 
 ```
 f_landscape/
-├── train_mnist.py                    # Main training script
-├── visualize_loss_landscape.py       # Loss landscape visualization
-├── requirements.txt                  # Python dependencies
-├── README.md                         # This file
-├── .gitignore                        # Git ignore rules
-├── mnist_linear_loss_landscape_plan.md  # Detailed visualization plan
+├── train_mnist.py                          # MNIST training script
+├── train_cifar10_cnn.py                    # CIFAR-10 CNN training script
+├── visualize_loss_landscape.py             # MNIST loss landscape
+├── visualize_loss_landscape_cifar10.py     # CIFAR-10 loss landscape
+├── visualize_single_sample_landscapes.py   # MNIST single-sample landscapes
+├── visualize_single_sample_landscapes_cifar10.py  # CIFAR-10 single-sample
+├── requirements.txt                        # Python dependencies
+├── README.md                              # This file
+├── .gitignore                             # Git ignore rules
+├── mnist_linear_loss_landscape_plan.md    # MNIST visualization plan
+├── plan_single_sample_loss_landscapes.md  # Single-sample plan
 ├── Visualizing the Loss Landscape of Neural Nets.pdf  # Reference paper
-├── data/                             # MNIST dataset (gitignored)
-├── mnist_linear_model.pth            # Trained model (gitignored)
-└── loss_landscape_results/           # Visualization outputs (gitignored)
-    ├── landscape_train_2d_contour.png
-    ├── landscape_test_2d_contour.png
-    ├── landscape_train_3d_surface.png
-    ├── landscape_train_1d_slices.png
-    ├── loss_grid_train.npz
-    ├── loss_grid_test.npz
-    └── experiment_log.txt
+├── data/                                  # Datasets (gitignored)
+│   ├── MNIST/
+│   └── cifar-10-batches-py/
+├── mnist_linear_model.pth                 # MNIST trained model (gitignored)
+├── cifar10_cnn_model.pth                  # CIFAR-10 trained model (gitignored)
+└── loss_landscape_results/                # Visualization outputs (gitignored)
+    ├── MNIST results (landscape_*.png, loss_grid_*.npz, etc.)
+    └── CIFAR-10 results (*_cifar10.png, *_cifar10.npz, etc.)
 ```
 
 ## References
