@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import json
+import argparse
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from train_cifar10_cnn import TinyCNN
@@ -267,7 +268,8 @@ def plot_samples_grid(alpha_vals, beta_vals, loss_grids, metas, save_path,
         cbar = fig.colorbar(contourf, cax=cbar_ax)
         cbar.set_label('Loss value', fontsize=10)
     
-    plt.suptitle('CIFAR-100 Single-Sample Loss Landscapes (Filter-Normalized Random Directions)',
+    model_suffix = " - Random Init" if 'Random' in save_path or '_random_init' in save_path else " - Trained"
+    plt.suptitle(f'CIFAR-100 Single-Sample Loss Landscapes{model_suffix} (Filter-Normalized)',
                  fontsize=14, fontweight='bold', y=0.995)
     
     plt.tight_layout(rect=[0, 0, 0.92 if share_colorbar else 1, 0.99])
@@ -277,6 +279,12 @@ def plot_samples_grid(alpha_vals, beta_vals, loss_grids, metas, save_path,
     plt.close()
 
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='CIFAR-100 Single-Sample Loss Landscape Visualization')
+    parser.add_argument('--random-init', action='store_true',
+                       help='Use random initialized network instead of trained model')
+    args = parser.parse_args()
+    
     # Configuration
     SEED = np.random.randint(0, 2**31 - 1)
     NUM_SAMPLES = 10
@@ -287,13 +295,17 @@ def main():
     LAYOUT = (2, 5)
     COLOR_SCALE = 'global'
     USE_GRAM_SCHMIDT = True
+    USE_RANDOM_INIT = args.random_init
     DEVICE = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     
+    model_type = "Random Initialized" if USE_RANDOM_INIT else "Trained"
+    
     print("=" * 60)
-    print("CIFAR-100 Single-Sample Loss Landscape Visualization")
+    print(f"CIFAR-100 Single-Sample Loss Landscape Visualization ({model_type})")
     print("=" * 60)
     print(f"Device: {DEVICE}")
     print(f"Random seed: {SEED}")
+    print(f"Model type: {model_type}")
     print(f"Number of samples: {NUM_SAMPLES}")
     print(f"Sample set: {SAMPLE_SET}")
     print(f"Grid resolution: {RESOLUTION}x{RESOLUTION}")
@@ -306,12 +318,21 @@ def main():
     set_seed(SEED)
     os.makedirs('loss_landscape_results', exist_ok=True)
     
-    print("\n1. Loading trained model...")
+    # Load model (trained or random init)
     model = TinyCNN().to(DEVICE)
-    checkpoint = torch.load('cifar10_cnn_model.pth', map_location=DEVICE)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    model.eval()
-    print(f"   Model loaded. Test accuracy: {checkpoint['test_accuracy']:.2f}%")
+    
+    if USE_RANDOM_INIT:
+        print("\n1. Using random initialized model...")
+        model.eval()
+        print("   Random initialized model created")
+        test_accuracy = 0.0  # Random init has ~1% accuracy on CIFAR-100
+    else:
+        print("\n1. Loading trained model...")
+        checkpoint = torch.load('cifar10_cnn_model.pth', map_location=DEVICE)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        model.eval()
+        test_accuracy = checkpoint['test_accuracy']
+        print(f"   Model loaded. Test accuracy: {test_accuracy:.2f}%")
     
     print("\n2. Loading CIFAR-100 dataset...")
     train_loader, test_loader, train_dataset, test_dataset = load_data(batch_size=512)
@@ -394,20 +415,24 @@ def main():
             'center_loss': float(meta['center_loss'])
         })
     
-    with open('loss_landscape_results/selected_samples_cifar100.json', 'w') as f:
+    # Determine file suffix based on model type
+    suffix = '_random_init' if USE_RANDOM_INIT else ''
+    
+    with open(f'loss_landscape_results/selected_samples_cifar100{suffix}.json', 'w') as f:
         json.dump({
             'seed': SEED,
             'sample_set': SAMPLE_SET,
             'num_samples': NUM_SAMPLES,
+            'model_type': model_type,
             'indices': selected_indices,
             'samples': metadata_to_save
         }, f, indent=2)
-    print("   Saved: loss_landscape_results/selected_samples_cifar100.json")
+    print(f"   Saved: loss_landscape_results/selected_samples_cifar100{suffix}.json")
     
     print("\n8. Creating visualization...")
     plot_samples_grid(
         alpha_vals, beta_vals, loss_grids, metas,
-        'loss_landscape_results/samples_landscape_grid_cifar100.png',
+        f'loss_landscape_results/samples_landscape_grid_cifar100{suffix}.png',
         layout=LAYOUT,
         share_colorbar=True,
         color_scale=COLOR_SCALE
@@ -415,7 +440,7 @@ def main():
     
     plot_samples_grid(
         alpha_vals, beta_vals, loss_grids, metas,
-        'loss_landscape_results/samples_landscape_grid_cifar100.pdf',
+        f'loss_landscape_results/samples_landscape_grid_cifar100{suffix}.pdf',
         layout=LAYOUT,
         share_colorbar=True,
         color_scale=COLOR_SCALE
@@ -423,7 +448,7 @@ def main():
     
     print("\n9. Saving individual sample data...")
     for i, (idx, loss_grid) in enumerate(zip(selected_indices, loss_grids)):
-        np.savez(f'loss_landscape_results/sample_{idx}_loss_grid_cifar100.npz',
+        np.savez(f'loss_landscape_results/sample_{idx}_loss_grid_cifar100{suffix}.npz',
                  alpha=alpha_vals,
                  beta=beta_vals,
                  loss=loss_grid,
@@ -437,9 +462,10 @@ def main():
     print("Results saved in: loss_landscape_results/")
     print("=" * 60)
     
-    with open('loss_landscape_results/single_sample_experiment_log_cifar100.txt', 'w') as f:
-        f.write("CIFAR-100 Single-Sample Loss Landscape Analysis\n")
+    with open(f'loss_landscape_results/single_sample_experiment_log_cifar100{suffix}.txt', 'w') as f:
+        f.write(f"CIFAR-100 Single-Sample Loss Landscape Analysis ({model_type})\n")
         f.write("=" * 60 + "\n\n")
+        f.write(f"Model type: {model_type}\n")
         f.write(f"Random seed: {SEED}\n")
         f.write(f"Number of samples: {NUM_SAMPLES}\n")
         f.write(f"Sample set: {SAMPLE_SET}\n")
@@ -452,18 +478,18 @@ def main():
         f.write(f"Gram-Schmidt: {USE_GRAM_SCHMIDT}\n")
         f.write(f"Color scale: {COLOR_SCALE}\n")
         f.write(f"Layout: {LAYOUT[0]}x{LAYOUT[1]}\n\n")
-        f.write(f"Model test accuracy: {checkpoint['test_accuracy']:.2f}%\n\n")
+        f.write(f"Model test accuracy: {test_accuracy:.2f}%\n\n")
         f.write("Selected samples:\n")
         for meta in metadata_to_save:
             f.write(f"  Sample #{meta['idx']}: y={meta['y_true']}, ŷ={meta['y_pred']}, "
                    f"p={meta['prob']:.3f}, L(0,0)={meta['center_loss']:.4f}\n")
         f.write("\nFiles generated:\n")
-        f.write("- selected_samples_cifar100.json (sample metadata)\n")
-        f.write("- samples_landscape_grid_cifar100.png (tiled visualization)\n")
-        f.write("- samples_landscape_grid_cifar100.pdf (tiled visualization, PDF)\n")
-        f.write(f"- sample_<idx>_loss_grid_cifar100.npz (individual grids, {NUM_SAMPLES} files)\n")
+        f.write(f"- selected_samples_cifar100{suffix}.json (sample metadata)\n")
+        f.write(f"- samples_landscape_grid_cifar100{suffix}.png (tiled visualization)\n")
+        f.write(f"- samples_landscape_grid_cifar100{suffix}.pdf (tiled visualization, PDF)\n")
+        f.write(f"- sample_<idx>_loss_grid_cifar100{suffix}.npz (individual grids, {NUM_SAMPLES} files)\n")
     
-    print("Experiment log saved: loss_landscape_results/single_sample_experiment_log_cifar100.txt")
+    print(f"Experiment log saved: loss_landscape_results/single_sample_experiment_log_cifar100{suffix}.txt")
 
 if __name__ == '__main__':
     main()
